@@ -1,0 +1,66 @@
+﻿@page "/CreateBook"
+@using AuthorBlazor.Models
+@using AuthorBlazor.Services
+@using Microsoft.AspNetCore.Components
+
+@inject AuthorService _authorService
+@inject NavigationManager NavigationManager
+
+
+<h3>Create Book</h3>
+
+@if (_allAuthors == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <EditForm Model="@_newBook" OnValidSubmit="@CreateNewBookAsync">
+        <DataAnnotationsValidator/>
+        <ValidationSummary/>
+
+        <div class="form-group"> ISBN:<br/> <InputNumber @bind-Value="_newBook.Isbn"/> </div>
+        <div class="form-group"> Title:<br/> <InputText @bind-Value="_newBook.Title"/> </div>
+        <div class="form-group"> Publication Year:<br/> <InputNumber @bind-Value="_newBook.PublicationYear"/></div>
+        <div class="form-group"> Number of Pages:<br/> <InputNumber @bind-Value="_newBook.NumOfPages"/></div>
+        <div class="form-group"> Genre:<br/><InputText @bind-Value="_newBook.Genre"/></div>
+
+        <div class="form-group">
+            Author: <br/>
+            <InputSelect @bind-Value="selectedAuthorId">
+                <option value=""> Select Author </option>
+                
+                @foreach (var author in _allAuthors)
+                {
+                    <option value="@author.Id"> @author.FirstName @author.LastName </option>
+                }
+            </InputSelect>
+        </div>
+
+        <p class="actions">
+            <button class="btn btn-outline-dark" type="submit">Create</button>
+        </p>
+    </EditForm>
+}
+
+@code {
+    
+    private Book _newBook = new Book();
+    private List<Author> _allAuthors;
+    private int selectedAuthorId;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _allAuthors = await _authorService.GetAllAuthorsAsync();
+    }
+    
+    private async Task CreateNewBookAsync()
+    {
+        Console.WriteLine(selectedAuthorId);
+        await _authorService.AddNewBookAsync(_newBook, selectedAuthorId);
+        NavigationManager.NavigateTo("/ViewAllBooks");
+    }
+    
+}

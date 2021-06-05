@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Remove="Pages\Counter.razor" />
+      <Content Remove="Shared\SurveyPrompt.razor" />
+      <Content Remove="Pages\FetchData.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Data\WeatherForecastService.cs" />
+      <Compile Remove="Data\WeatherForecast.cs" />
+      <Compile Remove="Data\Author.cs" />
+      <Compile Remove="Services\BookService.cs" />
+    </ItemGroup>
+
+</Project>

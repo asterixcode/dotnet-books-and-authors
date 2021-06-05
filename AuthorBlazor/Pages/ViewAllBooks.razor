@@ -1,0 +1,166 @@
+﻿@page "/ViewAllBooks"
+
+@using AuthorBlazor.Models
+@using AuthorBlazor.Services
+
+@inject NavigationManager _navigationManager
+@inject AuthorService _authorService
+
+
+@if (allBooks == null || allAuthors == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <p>
+        Filter by Author First Name:
+        <input type="text" @oninput="@(arg => FilterByAuthorFirstName(arg))" style="width:120px"/>
+    </p>
+    
+    <p>
+        Filter by Book Title:
+        <input type="text" @oninput="@(arg => FilterByBookTitle(arg))" style="width:120px"/>
+    </p>
+    
+    <h3>List of All Books</h3>
+    
+    
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Publication Year</th>
+            <th>Number Of Pages</th>
+            <th>Author First Name</th>
+            <th>Author Last Name</th>
+            <th>Delete Book</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var author in authorsToShow)
+        {
+            @foreach (var book in author.Books)
+            {
+                <tr>
+                    <td>@book.Title</td>
+                    <td>@book.PublicationYear</td>
+                    <td>@book.NumOfPages</td>
+                    <td>@author.FirstName</td>
+                    <td>@author.LastName</td>
+                    <td>
+                        <button @onclick="@(() => DeleteBookAsync(book.Isbn))">
+                            <i class="oi oi-trash" style="color:red"/>
+                        </button>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+ 
+
+@code {
+    private ICollection<Author> allAuthors;
+    private ICollection<Author> authorsToShow;
+    private ICollection<Author> filteredAuthors;
+    private ICollection<Book> allBooks;
+    private ICollection<Book> booksToShow;
+    
+    private string filterByAuthorFirstName;
+    private string filterByBookTitle;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPage();
+    }
+    
+    private void FilterByAuthorFirstName(ChangeEventArgs changeEventArgs)
+    {
+        filterByAuthorFirstName = "";
+        try
+        {
+            filterByAuthorFirstName = changeEventArgs.Value.ToString();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+        ExecuteFilter();
+    }
+    
+    private void FilterByBookTitle(ChangeEventArgs changeEventArgs)
+    {
+        filterByBookTitle = "";
+        try
+        {
+            filterByBookTitle = changeEventArgs.Value.ToString();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        
+        ExecuteBookTitleFilter();
+    }
+    
+    private void ExecuteFilter()
+    {
+        authorsToShow = allAuthors
+            .Where(a =>
+                (!filterByAuthorFirstName.Equals("") && a.FirstName.Contains(filterByAuthorFirstName) || filterByAuthorFirstName.Equals("")))
+            .ToList();
+
+    }
+    
+    private void ExecuteBookTitleFilter()
+    {
+        if (!filterByBookTitle.Equals(""))
+        {
+            filteredAuthors = new List<Author>();
+            
+            foreach (var author in authorsToShow)
+            {
+                foreach (var book in author.Books)
+                {
+                    if (book.Title.Contains(filterByBookTitle))
+                    {
+                        booksToShow.Add(book);
+                    }
+                    author.Books = booksToShow;
+                }
+                filteredAuthors.Add(author);
+            }
+            
+            
+        }
+        else
+        {
+            authorsToShow = allAuthors;
+        }
+        
+    }
+
+    
+    
+    
+    private async Task DeleteBookAsync(int id)
+    {
+        await _authorService.DeleteBookAsync(id);
+        await LoadPage();
+    }
+
+    private async Task LoadPage()
+    {
+        allAuthors = await _authorService.GetAllAuthorsAsync();
+        authorsToShow = allAuthors;
+        allBooks = await _authorService.GetAllBooksAsync();
+    }
+}
