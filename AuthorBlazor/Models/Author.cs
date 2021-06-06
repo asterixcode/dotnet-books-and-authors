@@ -13,6 +13,6 @@ namespace AuthorBlazor.Models
         [Required, MaxLength(15)]
         public string LastName { get; set; }
 
-        public ICollection<Book> Books { get; set; }
+        public IList<Book> Books { get; set; }
     }
 }

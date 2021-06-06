@@ -49,7 +49,7 @@ namespace AuthorAPI.Controllers
             {
                 authorDbContext.Authors.Add(author);
                 await authorDbContext.SaveChangesAsync();
-                return Ok(author);
+                return Created($"/{author.Id}", author);
             }
             catch (Exception e)
             {

@@ -50,20 +50,20 @@ namespace AuthorAPI.Controllers
             
             try
             {
-                _dbContext.Books.Add(book);
+                await _dbContext.Books.AddAsync(book);
                 
                 Author AuthorToAddNewBook = 
-                    _dbContext
-                    .Authors
-                    .Include(a => a.Books)
-                    .First(a => a.Id == id);
+                    await _dbContext
+                        .Authors
+                        .Include(a => a.Books)
+                        .FirstAsync(a => a.Id == id);
                 
                 AuthorToAddNewBook.Books.Add(book);
                 
                 _dbContext.Update(AuthorToAddNewBook);
                 await _dbContext.SaveChangesAsync();
                 
-                return Created($"/{id}", book);
+                return Created($"/{book.Isbn}", book);
             }
             catch (Exception e)
             {
@@ -91,7 +91,9 @@ namespace AuthorAPI.Controllers
                 }
                 _dbContext.Books.Remove(bookToDelete);
                 _dbContext.SaveChanges();
-                
+
+                return NoContent();
+
             }
             catch (Exception e)
             {

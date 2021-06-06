@@ -46,7 +46,7 @@ namespace AuthorBlazor.Services
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
-            
+
             return allAuthors;
         }
         

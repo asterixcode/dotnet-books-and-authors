@@ -7,7 +7,7 @@
 @inject AuthorService _authorService
 
 
-@if (allBooks == null || allAuthors == null)
+@if (allAuthors == null)
 {
     <p>
         <em>Loading...</em>
@@ -65,21 +65,18 @@ else
  
 
 @code {
-    private ICollection<Author> allAuthors;
-    private ICollection<Author> authorsToShow;
-    private ICollection<Author> filteredAuthors;
-    private ICollection<Book> allBooks;
-    private ICollection<Book> booksToShow;
+    private IList<Author> allAuthors = new List<Author>();
+    private IList<Author> authorsToShow = new List<Author>();
     
-    private string filterByAuthorFirstName;
-    private string filterByBookTitle;
+    private string filterByAuthorFirstName = "";
+    private string filterByBookTitle = "";
     
     protected override async Task OnInitializedAsync()
     {
         await LoadPage();
     }
     
-    private void FilterByAuthorFirstName(ChangeEventArgs changeEventArgs)
+    private async Task FilterByAuthorFirstName(ChangeEventArgs changeEventArgs)
     {
         filterByAuthorFirstName = "";
         try
@@ -92,10 +89,10 @@ else
             throw;
         }
         
-        ExecuteFilter();
+        await ExecuteFilter();
     }
     
-    private void FilterByBookTitle(ChangeEventArgs changeEventArgs)
+    private async Task FilterByBookTitle(ChangeEventArgs changeEventArgs)
     {
         filterByBookTitle = "";
         try
@@ -107,50 +104,30 @@ else
             Console.WriteLine(e);
             throw;
         }
-        
-        ExecuteBookTitleFilter();
+        await ExecuteFilter();
     }
-    
-    private void ExecuteFilter()
-    {
-        authorsToShow = allAuthors
-            .Where(a =>
-                (!filterByAuthorFirstName.Equals("") && a.FirstName.Contains(filterByAuthorFirstName) || filterByAuthorFirstName.Equals("")))
-            .ToList();
 
-    }
-    
-    private void ExecuteBookTitleFilter()
+    private async Task ExecuteFilter()
     {
-        if (!filterByBookTitle.Equals(""))
+        allAuthors = await _authorService.GetAllAuthorsAsync();
+        authorsToShow = allAuthors.Where(a => filterByAuthorFirstName != null && a.FirstName.Contains(filterByAuthorFirstName) || filterByAuthorFirstName == null).ToList();
+
+        if (filterByBookTitle != null && !filterByBookTitle.Equals(""))
         {
-            filteredAuthors = new List<Author>();
-            
             foreach (var author in authorsToShow)
             {
-                foreach (var book in author.Books)
+                foreach (var book in author.Books.ToList())
                 {
-                    if (book.Title.Contains(filterByBookTitle))
+                    if (!book.Title.Contains(filterByBookTitle))
                     {
-                        booksToShow.Add(book);
+                        author.Books.Remove(book);
                     }
-                    author.Books = booksToShow;
                 }
-                filteredAuthors.Add(author);
             }
-            
-            
         }
-        else
-        {
-            authorsToShow = allAuthors;
-        }
-        
     }
-
     
-    
-    
+        
     private async Task DeleteBookAsync(int id)
     {
         await _authorService.DeleteBookAsync(id);
@@ -160,7 +137,58 @@ else
     private async Task LoadPage()
     {
         allAuthors = await _authorService.GetAllAuthorsAsync();
-        authorsToShow = allAuthors;
-        allBooks = await _authorService.GetAllBooksAsync();
+        authorsToShow = await _authorService.GetAllAuthorsAsync();
     }
+    
+    // private void ExecuteFilter()
+    // {
+    //     authorsToShow = allAuthors
+    //         .Where(a =>
+    //             ((!filterByAuthorFirstName.Equals("") && a.FirstName.Contains(filterByAuthorFirstName)) || filterByAuthorFirstName.Equals("")) &&
+    //             ((!filterByBookTitle.Equals("") && a.Books.Where(b => b.Title.Contains(filterByBookTitle)).ToList().Any()) || filterByBookTitle.Equals("")))
+    //         .ToList();
+    // }
+    
+    
+    // private async Task ExecuteFilter()
+    // {
+    //     authorsToShow = allAuthors
+    //         .Where(a =>
+    //             (!filterByAuthorFirstName.Equals("") && a.FirstName.Contains(filterByAuthorFirstName) || filterByAuthorFirstName.Equals("")))
+    //         .ToList();
+    // }
+    
+    
+    // private async Task ExecuteBookTitleFilter()
+    // {
+    //     if (!filterByBookTitle.Equals(""))
+    //     {
+    //         foreach (var author in allAuthors)
+    //         {
+    //             var filteredAuthor = new Author();
+    //             var filteredBooks = new List<Book>();
+    //             
+    //             foreach (var book in author.Books)
+    //             {
+    //                 if (book.Title.Contains(filterByBookTitle))
+    //                 {
+    //                     if (!filteredBooks.Contains(book))
+    //                     filteredBooks.Add(book);
+    //                 }
+    //             }
+    //             filteredAuthor.Books = filteredBooks;
+    //             filteredAuthors?.Add(author);
+    //         }
+    //
+    //         filteredAuthors = authorsToShow;
+    //     }
+    //     else
+    //     {
+    //         authorsToShow = allAuthors;
+    //         await ExecuteFilter();
+    //     }
+    //     
+    // }
+
+    
 }

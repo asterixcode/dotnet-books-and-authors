@@ -8,6 +8,7 @@
       <Content Remove="Pages\Counter.razor" />
       <Content Remove="Shared\SurveyPrompt.razor" />
       <Content Remove="Pages\FetchData.razor" />
+      <Content Remove="Pages\ViewBooks.razor" />
     </ItemGroup>
 
     <ItemGroup>
